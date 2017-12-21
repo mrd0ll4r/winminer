@@ -63,8 +63,8 @@ func (c *lowLevelClient) connect(auth2Token, hubBaseURL, connectionToken string)
 	return conn, nil
 }
 
-// A GenericResponse is used for both the /start and /ping endpoint of the
-// live API "signalr" endpoint.
+// A GenericSignalrResponse is used for both the /start and /ping endpoint of
+// the live API "signalr" endpoint.
 type GenericSignalrResponse struct {
 	Response string `json:"Response"`
 }
@@ -153,7 +153,7 @@ type LitecoinTransaction struct {
 	JWT           JWTEntry `json:"jwt"`
 }
 
-// A JWT entry holds signed(?) information about litecoin(?) transaction
+// A JWTEntry holds signed(?) information about litecoin(?) transaction
 // specifics.
 type JWTEntry struct {
 	Data                string          `json:"data"` // never seen, no idea what type
@@ -199,6 +199,8 @@ type TransactionEntry struct {
 	IP                      string `json:"ip"`
 }
 
+// ParseDataAsLitcoinTransaction parses the TransactionData as a
+// LitcoinTransaction.
 func (e TransactionEntry) ParseDataAsLitecoinTransaction() (*LitecoinTransaction, error) {
 	var t LitecoinTransaction
 	err := json.Unmarshal([]byte(e.TransactionData), &t)
@@ -294,7 +296,7 @@ type Auth2Request struct {
 	LoginToken string `json:"loginToken"`
 }
 
-// An Auth2Reponse is the response to an Auth2Request.
+// An Auth2Response is the response to an Auth2Request.
 type Auth2Response struct {
 	Host  string `json:"host"`
 	Token string `json:"token"`
@@ -319,7 +321,7 @@ func (c *lowLevelClient) auth2() (*Auth2Response, error) {
 	return &resp, nil
 }
 
-// A MachineResponse holds a bunch of MachineEntries.
+// A MachinesResponse holds a bunch of MachineEntries.
 type MachinesResponse []MachineEntry
 
 // A MachineEntry holds information about one machine.

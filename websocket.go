@@ -197,7 +197,7 @@ type StatusChangeContainer struct {
 	Status     DeviceStatus
 }
 
-// ParsestatusChangedMessage parses a StatusChanged message.
+// ParseStatusChangedMessage parses a StatusChanged message.
 func ParseStatusChangedMessage(message RawMessage) (*StatusChangeContainer, error) {
 	if message.Method != "StatusChanged" {
 		return nil, errors.New("not a StatusChanged message")
@@ -255,7 +255,7 @@ func ParseSystemInfoMessage(message RawMessage) ([]MachineEntry, error) {
 // Read reads a message off the websocket.
 // Use ReadNextInterestingMessage instead.
 //
-// This method returns all kinds of errors that concurrently occured since the
+// This method returns all kinds of errors that concurrently occurred since the
 // last call to Read.
 // If it does return an error, close and re-open the websocket connection.
 func (c *WebsocketClient) Read() (messageType int, b []byte, err error) {

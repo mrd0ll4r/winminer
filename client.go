@@ -199,7 +199,7 @@ type TransactionEntry struct {
 	IP                      string `json:"ip"`
 }
 
-// ParseDataAsLitcoinTransaction parses the TransactionData as a
+// ParseDataAsLitecoinTransaction parses the TransactionData as a
 // LitcoinTransaction.
 func (e TransactionEntry) ParseDataAsLitecoinTransaction() (*LitecoinTransaction, error) {
 	var t LitecoinTransaction

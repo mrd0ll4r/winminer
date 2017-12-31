@@ -66,6 +66,7 @@ func (c *APIClient) closeWebsocket() error {
 	}
 
 	c.ws.close()
+	c.ws = nil
 	return nil
 }
 

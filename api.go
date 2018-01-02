@@ -9,7 +9,9 @@ import (
 
 // An APIClient is a client for the WinMiner API.
 type APIClient struct {
-	c *lowLevelClient
+	c        *lowLevelClient
+	email    string
+	password string
 
 	ws     *WebsocketClient
 	wsLock sync.Mutex
@@ -110,4 +112,12 @@ func (c *APIClient) GetMachines() (*MachinesResponse, error) {
 // GetStats returns historical statistics.
 func (c *APIClient) GetStats() (*StatsResponse, error) {
 	return c.c.getStats()
+}
+
+// UpdateLoginToken performs another login request to update the token returned.
+// You should call this periodically, it looks like winminer invalidates tokens
+// after some time.
+func (c *APIClient) UpdateLoginToken() error {
+	_, err := c.c.postLogin(c.email, c.password)
+	return err
 }

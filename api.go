@@ -31,7 +31,9 @@ func NewAPIClient(email, password string, debug bool) (*APIClient, error) {
 	}
 
 	return &APIClient{
-		c: c,
+		c:        c,
+		email:    email,
+		password: password,
 	}, nil
 }
 

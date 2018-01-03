@@ -75,7 +75,7 @@ func main() {
 				if err != nil {
 					panic(err)
 				}
-				err = state.Update(*status)
+				err = state.UpdateStatus(*status)
 				if err != nil {
 					panic(err)
 				}

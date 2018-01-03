@@ -47,11 +47,11 @@ func (s *LiveState) AddMachine(entry MachineEntry) {
 	s.Machines = append(s.Machines, entry)
 }
 
-// Update updates the state with the given status change.
+// UpdateStatus updates the state with the given status change.
 // Returns an error if the device or machine was not found.
 // If that happens, the state got out of sync somehow.
 // Best close and re-open the websocket connection and rebuild the state.
-func (s *LiveState) Update(container StatusChangeContainer) error {
+func (s *LiveState) UpdateStatus(container StatusChangedMessage) error {
 	s.Lock()
 	defer s.Unlock()
 	for i, m := range s.Machines {
@@ -63,6 +63,31 @@ func (s *LiveState) Update(container StatusChangeContainer) error {
 					m.Devices[j] = d
 					s.Machines[i] = m
 					s.DevicesLastUpdated[container.DeviceID] = time.Now()
+
+					return nil
+				}
+			}
+			return errors.New("device not found")
+		}
+	}
+	return errors.New("machine not found")
+}
+
+// UpdateState updates the LiveState with the given StateChangedMessage.
+// This usually sets the enabled flag of one device to false, when mining
+// on that device is stopped.
+func (s *LiveState) UpdateState(msg StateChangedMessage) error {
+	s.Lock()
+	defer s.Unlock()
+	for i, m := range s.Machines {
+		if m.SID == msg.MachineSID {
+			for j, d := range m.Devices {
+				if d.ID == msg.DeviceID {
+					d.Enabled = msg.Enabled
+
+					m.Devices[j] = d
+					s.Machines[i] = m
+					s.DevicesLastUpdated[msg.DeviceID] = time.Now()
 
 					return nil
 				}

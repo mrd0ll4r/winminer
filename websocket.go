@@ -13,10 +13,15 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// Websocket method constants.
+// Mining status constants.
 const (
-	MethodSetSystemInfo = "SetSystemInfo"
-	MethodStatusChanged = "StatusChanged"
+	StatusMining      = 8
+	StatusStoppingToo = 10
+	StatusStopping    = 0 // maybe
+	StatusStarting1   = 2
+	StatusStarting2   = 1
+	StatusStarting3   = 5
+	StatusStarting4   = 6
 )
 
 // A WebsocketClient is a client for the Winminer Live API.
@@ -115,6 +120,12 @@ func newWebsocketClient(c *lowLevelClient) (*WebsocketClient, error) {
 }
 
 func (c *WebsocketClient) close() {
+	log.Debugln("websocket close() called")
+	select {
+	case <-c.closed:
+		return
+	default:
+	}
 	close(c.closed)
 	c.wg.Wait()
 
@@ -188,68 +199,6 @@ func isInterestingChannel(b []byte) bool {
 	}
 
 	return r.isInteresting()
-}
-
-// A StatusChangeContainer is the content of a StatusChanged message.
-type StatusChangeContainer struct {
-	MachineSID string
-	DeviceID   string
-	Status     DeviceStatus
-}
-
-// ParseStatusChangedMessage parses a StatusChanged message.
-func ParseStatusChangedMessage(message RawMessage) (*StatusChangeContainer, error) {
-	if message.Method != "StatusChanged" {
-		return nil, errors.New("not a StatusChanged message")
-	}
-
-	if len(message.Arguments) != 3 {
-		log.WithField("args", message.Arguments).Errorln("StatusChanged message didn't have 3 args")
-		return nil, errors.New("expected 3 arguments")
-	}
-
-	bb1, _ := message.Arguments[0].MarshalJSON()
-	bb2, _ := message.Arguments[1].MarshalJSON()
-	bb3, _ := message.Arguments[2].MarshalJSON()
-
-	var s1, s2 string
-	err := json.Unmarshal(bb1, &s1)
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to decode")
-	}
-	err = json.Unmarshal(bb2, &s2)
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to decode")
-	}
-
-	var s DeviceStatus
-	err = json.Unmarshal(bb3, &s)
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to decode")
-	}
-
-	return &StatusChangeContainer{MachineSID: s1, DeviceID: s2, Status: s}, nil
-}
-
-// ParseSystemInfoMessage parses a SystemInfo message.
-func ParseSystemInfoMessage(message RawMessage) ([]MachineEntry, error) {
-	if message.Method != "SetSystemInfo" {
-		return nil, errors.New("not a SystemInfo message")
-	}
-
-	if len(message.Arguments) != 3 {
-		log.WithField("args", message.Arguments).Errorln("SystemInfo message didn't have 3 args")
-		return nil, errors.New("expected 3 arguments")
-	}
-
-	bb, _ := message.Arguments[2].MarshalJSON()
-	var m MachineEntry
-	err := json.Unmarshal(bb, &m)
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to decode")
-	}
-
-	return []MachineEntry{m}, nil
 }
 
 // Read reads a message off the websocket.
